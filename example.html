@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>example.rb</title>
+  <link rel="stylesheet" href="http://jashkenas.github.com/docco/resources/docco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>example.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-1'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-1">&#182;</a>
+        </div>
+        
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;bundler/setup&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;active_support&#39;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-2'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-2">&#182;</a>
+        </div>
+        <p>Group is the base class where we define our custom callbacks. After
+mixing in <code>ActiveSupport::Callbacks</code>, we define a custom <code>:user_added</code>
+callback with <code>#define_callbacks</code>. This lets us use before, around, and
+after callbacks.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">class</span> <span class="nc">Group</span>
+  <span class="kp">include</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Callbacks</span>
+  <span class="n">define_callbacks</span> <span class="ss">:user_added</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">opts</span> <span class="o">=</span> <span class="p">{})</span>
+    <span class="vi">@users</span> <span class="o">=</span> <span class="o">[]</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>Whenever we add a new user to our array, we wrap the code
+with <code>run_callbacks</code>. This will run any defined callbacks
+in order.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">add_user</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+    <span class="n">run_callbacks</span> <span class="ss">:user_added</span> <span class="k">do</span>
+      <span class="nb">puts</span> <span class="s2">&quot;    adding user&quot;</span>
+      <span class="vi">@users</span> <span class="o">&lt;&lt;</span> <span class="n">u</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">SubGroup</span> <span class="o">&lt;</span> <span class="no">Group</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>To register a callback, use <code>set_callback</code>. By default,
+it assumes you are defining a <code>before</code> callback.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">set_callback</span> <span class="ss">:user_added</span><span class="p">,</span> <span class="ss">:before_sub_user</span>
+
+  <span class="k">def</span> <span class="nf">add_user</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+    <span class="k">super</span><span class="p">(</span><span class="s2">&quot;sub_</span><span class="si">#{</span><span class="n">u</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">before_sub_user</span>
+    <span class="nb">puts</span> <span class="s2">&quot;before_sub_user: </span><span class="si">#{</span><span class="vi">@users</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">CustomGroup</span> <span class="o">&lt;</span> <span class="no">SubGroup</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>Multiple callbacks can be registered. Callbacks are run
+in FIFO order, with callbacks later in the inheritance
+tree having lower precendence. So the parent class&rsquo;s
+<code>#before_sub_user</code> will be called before this class&rsquo;s
+<code>#before_user</code>.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">set_callback</span> <span class="ss">:user_added</span><span class="p">,</span> <span class="ss">:before</span><span class="p">,</span> <span class="ss">:before_user</span>
+  <span class="n">set_callback</span> <span class="ss">:user_added</span><span class="p">,</span> <span class="ss">:around</span><span class="p">,</span> <span class="ss">:around_user</span>
+  <span class="n">set_callback</span> <span class="ss">:user_added</span><span class="p">,</span> <span class="ss">:after</span><span class="p">,</span>  <span class="ss">:after_user</span>
+
+  <span class="k">def</span> <span class="nf">before_user</span>
+    <span class="nb">puts</span> <span class="s2">&quot;before_user: </span><span class="si">#{</span><span class="vi">@users</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">around_user</span>
+    <span class="nb">puts</span> <span class="s2">&quot;  around_user: </span><span class="si">#{</span><span class="vi">@users</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="nb">puts</span> <span class="s2">&quot;  around_user yield:&quot;</span>
+    <span class="k">yield</span>
+    <span class="nb">puts</span> <span class="s2">&quot;  around_user: </span><span class="si">#{</span><span class="vi">@users</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">&quot;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">after_user</span>
+    <span class="nb">puts</span> <span class="s2">&quot;after_user: </span><span class="si">#{</span><span class="vi">@users</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p>Here we create a new CustomGroup and kick of the callbacks.
+The results will look like:</p>
+
+<pre>
+before_sub_user: []
+before_user: []
+  around_user: []
+  around_user yield:
+    adding user
+after_user: [&ldquo;sub_bob&rdquo;]
+  around_user: [&ldquo;sub_bob&rdquo;]
+</pre>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">cg</span> <span class="o">=</span> <span class="no">CustomGroup</span><span class="o">.</span><span class="n">new</span>
+<span class="n">cg</span><span class="o">.</span><span class="n">add_user</span><span class="p">(</span><span class="s2">&quot;bob&quot;</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
